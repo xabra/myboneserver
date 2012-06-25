@@ -1,6 +1,6 @@
 
 // Do the require's
-//var bb = require('./bonescript');
+// var bb = require('./bonescript');    // Mappings to BeagleBone I/O etc...
 var fs = require('fs');                 // File system
 var express = require('express');       // express server
 var socket = require('socket.io');      // Socket io
@@ -15,15 +15,15 @@ console.log('Express server started on port %s', app.address().port);
 
 // --- Handle HTTP GET's
 app.get('/', function (request, response) {
-    response.sendfile(__dirname + '/myboneserver/index.html');
+    response.sendfile(__dirname + '/index.html');
     });
    
 app.get('/:file', function (request, response) {
-   response.sendfile(__dirname + '/myboneserver/' + request.params.file);
+   response.sendfile(__dirname + '/' + request.params.file);
    });   
    
 
-// ----- Define the Controller class -----
+// ----- Define a Controller class -----
 function Controller() {
     this.state = 'Ready';   // Init current state
     this.nSamples = 50;    // Max number of samples to aquire
@@ -39,8 +39,7 @@ Controller.prototype.getCurrentState = function() {
 Controller.prototype.setCurrentState = function(newState) {  
     this.state = newState;
 };
-
-Controller.prototype.updateState = function() {  
+Controller.prototype.updateState = function() {  //Broadcast any changes to internal state
     this.emit ('state_changed', {currentState: this.getCurrentState(), adc0val: this.ain1, sample: this.iSample});
 };
 
@@ -48,12 +47,12 @@ Controller.prototype.acquire = function acquire() {
     var self = this;
     // Set D/A converters AOUT here
     // Read A/D converters AIN:
-    self.ain1 = fs.readFileSync('/sys/devices/platform/tsc/ain1', 'utf8');  // Read in analog value
+    self.ain1 = 123; // fs.readFileSync('/sys/devices/platform/tsc/ain1', 'utf8');  // Read in analog value
     self.updateState();
     if(self.iSample < self.nSamples-1) {
         self.iSample++; // Increment sample counter
-        process.nextTick(self.acquire());             
-    } else {    //...else reached end of measurement scan
+        process.nextTick(self.acquire());         
+    } else {    //...else, we have reached end of measurement scan -> issue stop command
         self.emit ('command', {name: 'stop'});                                
     }
 };
@@ -67,7 +66,7 @@ Controller.prototype.handleCommand = function(data) {
                 case 'run':
                     self.iSample = 0;   //Init sample count
                     self.setCurrentState('Scanning');
-                    self.acquire();     // start data acquisition loop
+                    self.acquire();     // start data acquisition loop  <=== COMMENT THIS OUT AND THE BUTTONS WORK FINE    
                 break;
                 default:
                 break;
@@ -106,11 +105,15 @@ Controller.prototype.handleCommand = function(data) {
 var controller = new Controller("Controller");
 console.log('Created new controller');
 
+
 controller.on('command', function(data) {
     controller.handleCommand(data);
 }); 
 
+
 io.sockets.on('connection', function (socket) {
+    console.log(' ------  Client Connected ');
+    
     // Receive UI commands from client and send to controller
     socket.on('command', function(data) {
         console.log(' ------  Received UI command: ' + data.name);
@@ -122,11 +125,11 @@ io.sockets.on('connection', function (socket) {
         socket.emit('state_changed', data); 
     });
     
+    // on disconnect
+    socket.on('disconnect', function() {
+        console.log("Client disconnected.");
+    });
+    
     controller.updateState();   //Refresh the UI on connection
 });
-
-
-
-
-
 
