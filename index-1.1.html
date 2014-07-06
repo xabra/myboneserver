@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+ <head>
+ <meta charset="UTF-8">
+  <title> === Beagle Bone Controller === </title>
+  <script  type=text/javascript src="/socket.io/socket.io.js" ></script>
+  <script  type=text/javascript src="./graph.js" ></script>
+  <script  type=text/javascript src="./clientcode.js" ></script>  
+  <script type=text/javascript src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+ </head>
+ 
+ <body>
+    <div id="masthead" style="position: absolute; top: 5px; left: 50px;">
+    BeagleBone Controller
+    </div>
+    
+    <div style="position: absolute; top: 50px; left: 50px;">
+    <canvas id="graph" width="700" height="400">
+        your browser does not support HTML5 Canvas
+    </canvas>
+    </div>
+    
+    <div id="controls" style="position: absolute; top: 455px; left: 50px;">
+        <button id="button_run"> <img src="Button_Play_Black_32x32.png" alt="RUN" align="center" border="0" width="100%" /></button>
+        <button id="button_pause"> <img src="Button_Pause_Black_32x32.png" alt="PAUSE" align="center" width="100%" /></button>
+        <button id="button_stop"> <img src="Button_Stop_Black_32x32.png" alt="STOP" align="center" width="100%" /></button> 
+    </div>
+    
+    <div id="signals" style="position: absolute; top: 500px; left: 50px;">
+      <p id = "sample"> </p>
+      <p id = "adc0_value"> </p>
+      <p id = "fsm_state"> </p>
+    </div>
+    
+
+ </body>
+</html>
